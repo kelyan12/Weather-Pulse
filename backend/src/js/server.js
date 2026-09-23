@@ -35,7 +35,7 @@ connectWithRetry();
 app.get('/api/weather', async (req, res) => {
   const city = req.query.city;
   if (!city) {
-    return res.status(400).json({"A city is required" });
+    return res.status(400).json({ error: 'A city is required' });
   }
 
   try {
@@ -61,18 +61,25 @@ app.get('/api/weather', async (req, res) => {
       weathercode: weatherData.current_weather.weathercode,
       time: weatherData.current_weather.time
     });
-  }///catch (error){...}
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
-  //}
-
-  //fav cities
-  app.get('/api/favorites', async (req, res) => {
+// fav cities
+app.get('/api/favorites', async (req, res) => {
+  try {
     const favorites = await Favorite.find().sort({ addedAt: -1 });
     res.json(favorites);
-  }//TODO catch error (trycatch)
+  } catch (error) {
+    console.error('Error fetching favorite cities:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
-  //TODO Sav the city in the fav
+// TODO: Save the city in the favorites.
 
-  app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Backend Weather API on ${PORT} port`);//to make sure
 });
