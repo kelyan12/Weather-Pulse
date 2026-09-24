@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/weather_db';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongodb:27017/weather_db';
 
 //structure of the mongoDb model 
 const favoriteSchema = new mongoose.Schema({
@@ -40,7 +40,7 @@ app.get('/api/weather', async (req, res) => {
 
   try {
     //with that i can get the lat and lon of the city fetched
-    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`);
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
     const geoData = await geoRes.json();
 
     if (!geoData.results || geoData.results.length === 0) {return res.status(404).json({ error: 'City not found' });}
@@ -48,18 +48,23 @@ app.get('/api/weather', async (req, res) => {
     const location = geoData.results[0];
     const { latitude, longitude, name, country } = location;
     //fetch the meteo datas
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,visibility,surface_pressure,wind_speed_10m,weather_code&timezone=auto`);
     const weatherData = await weatherRes.json();
+    const current = weatherData.current;
 
     res.json({
       cityName: name,
       country: country || '',
       latitude,
       longitude,
-      temperature: weatherData.current_weather.temperature,
-      windspeed: weatherData.current_weather.windspeed,
-      weathercode: weatherData.current_weather.weathercode,
-      time: weatherData.current_weather.time
+      temperature: current.temperature_2m,
+      humidity: current.relative_humidity_2m,
+      visibility: current.visibility,
+      pressure: current.surface_pressure,
+      windspeed: current.wind_speed_10m,
+      weathercode: current.weather_code,
+      time: current.time,
+      timezone: weatherData.timezone
     });
   } catch (error) {
     console.error('Error fetching weather data:', error);
@@ -78,7 +83,42 @@ app.get('/api/favorites', async (req, res) => {
   }
 });
 
-// TODO: Save the city in the favorites.
+//save the city in the fav
+
+app.post('/api/favorites', async (req, res) => {
+  try {
+    const { cityName, country, latitude, longitude } = req.body;
+    const favorite = new Favorite({ cityName, country, latitude, longitude });
+    await favorite.save();
+    res.status(201).json(favorite);
+  } catch (error) {
+    console.error('Error saving favorite city:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/favorites/:id', async (req, res) => {
+  try {
+    const favorite = await Favorite.findByIdAndDelete(req.params.id);
+    if (!favorite) {
+      return res.status(404).json({ error: 'Favorite city not found' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting favorite city:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/favorites', async (req, res) => {
+  try {
+    await Favorite.deleteMany({});
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error clearing favorite cities:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Backend Weather API on ${PORT} port`);//to make sure

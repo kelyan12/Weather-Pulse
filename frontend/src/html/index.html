@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Weather information">
+  <link rel="icon" href="/images/weather.png">
+  <script src="/js/index.js" defer></script>
+  <link rel="stylesheet" href="/css/index.css">
+  <title>Weather Pulse</title>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div class="logo">
+      <img class="logo-icon" src="/images/weather.png" alt="Weather Icon">
+      <h1>Weather Pulse</h1>
+    </div>
+    <div class="clock" id="clock"><time datetime="current"></time></div>
+  </header>
+
+  <div class="card search-card">
+    <div class="search-box">
+      <img class="search-icon" src="/images/search.png" alt="Search Icon">
+      <input type="text" id="cityInput" placeholder="Search location...">
+      <button onclick="searchWeather()" class="visually-hidden">Search</button>
+    </div>
+  </div>
+
+  <div id="weatherResult" class="weather-result">
+    <div class="weather-location">
+      <h3 id="resCity">???</h3>
+      <span class="pin"><img src="/images/location.png" alt="Pin Icon"></span>
+    </div>
+
+    <div class="weather-main">
+      <span class="thermo"><img src="/images/temperature.png" alt="Thermometer Icon"></span>
+      <span class="temp-value"><strong id="resTemp">?</strong>°C</span>
+    </div>
+
+    <div class="weather-date" id="resDate">?, ?</div>
+
+    <div class="weather-stats">
+      <div class="stat">
+        <span class="stat-label">HUMIDITY</span>
+        <span class="stat-value" id="resHumidity">?</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">VISIBILITY</span>
+        <span class="stat-value" id="resVisibility">?</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">AIR PRESSURE</span>
+        <span class="stat-value" id="resPressure">?</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">WIND</span>
+        <span class="stat-value"><span id="resWind">?</span> km/h</span>
+      </div>
+    </div>
+
+    <button onclick="saveFavorite()" class="add-fav-btn">Add to Favorites</button>
+  </div>
+
+  <div class="hourly-list" id="hourlyContainer">
+    <div class="hourly-item">
+    </div>
+  </div>
+
+  <div class="card fav-card">
+    <div class="favorites-heading">
+      <h2>Favorite Cities</h2>
+      <button id="clearFavoritesButton" class="clear-favorites-btn" type="button" onclick="clearFavorites()">Clear</button>
+    </div>
+    <div id="favContainer" class="fav-list">Loading favorites...</div>
+  </div>
+
+</body>
+</html>
